@@ -1,0 +1,63 @@
+NAME TEST2_1 ;累积求和计算乘积
+
+DATA SEGMENT
+    NUM1 DB 54H
+    NUM2 DB 23H
+    NUM3 DB 0H,0H
+DATA ENDS
+
+STACK SEGMENT PARA STACK
+    DB 10H DUP(0)
+STACK ENDS
+
+CODE SEGMENT
+    ASSUME DS:DATA, SS:STACK, CS:CODE
+    
+START:
+    MOV AX,DATA
+    MOV DS,AX
+    
+    LEA SI,NUM1;
+    MOV BL,[SI]
+    LEA SI,NUM2
+    MOV CL,[SI]
+    
+    MOV DX,0
+    CLC
+    
+CHECK:
+    OR BL,BL
+    JZ FINISH
+    OR CL,CL
+    JZ FINISH
+    
+    MOV AL,DL
+    ADD AL,BL
+    DAA
+    MOV DL,AL
+    
+    JNC NEXT
+    MOV AL,DH
+    CLC
+    INC AL
+    DAA
+    MOV DH,AL
+    
+NEXT:
+    MOV AL,CL
+    CLC
+    DEC AL
+    DAS
+    MOV CL,AL
+
+    JNZ CHECK
+    
+FINISH:
+    LEA SI,NUM3
+    MOV [SI],DX
+    
+    INT 3
+    
+CODE ENDS
+
+END START

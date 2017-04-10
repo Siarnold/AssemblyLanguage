@@ -1,0 +1,3 @@
+# The compiled and linked result of ASM
+*.obj
+*.exe
