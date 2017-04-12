@@ -1,63 +1,51 @@
-NAME TEST2_1 ;累积求和计算乘积
+NAME EX2_3
+;Copyleft(c), Siarnold, 2017
 
-DATA SEGMENT
-    NUM1 DB 54H
-    NUM2 DB 23H
-    NUM3 DB 0H,0H
-DATA ENDS
-
-STACK SEGMENT PARA STACK
-    DB 10H DUP(0)
-STACK ENDS
-
-CODE SEGMENT
-    ASSUME DS:DATA, SS:STACK, CS:CODE
-    
-START:
-    MOV AX,DATA
-    MOV DS,AX
-    
-    LEA SI,NUM1;
-    MOV BL,[SI]
-    LEA SI,NUM2
-    MOV CL,[SI]
-    
-    MOV DX,0
-    CLC
-    
-CHECK:
-    OR BL,BL
-    JZ FINISH
-    OR CL,CL
-    JZ FINISH
-    
-    MOV AL,DL
-    ADD AL,BL
-    DAA
-    MOV DL,AL
-    
-    JNC NEXT
-    MOV AL,DH
-    CLC
-    INC AL
-    DAA
-    MOV DH,AL
-    
-NEXT:
-    MOV AL,CL
-    CLC
-    DEC AL
-    DAS
-    MOV CL,AL
-
-    JNZ CHECK
-    
-FINISH:
-    LEA SI,NUM3
-    MOV [SI],DX
-    
-    INT 3
-    
-CODE ENDS
-
-END START
+DATA    SEGMENT
+        M1 DB 23H ;multiplier one
+        M2 DB 75H ;multiplier two
+        PRD DB 2 DUP(?) ;product
+DATA    ENDS
+STACK   SEGMENT PARA STACK
+        DB 100 DUP(?)
+STACK   ENDS
+CODE    SEGMENT
+        ASSUME DS:DATA, ES:DATA, SS:STACK, CS:CODE
+START:  MOV AX, DATA; the old 3 lines
+        MOV DS, AX
+        MOV ES, AX
+        
+        MOV BL, [M1]; the multiplied number
+        MOV CL, [M2]; the multiplying number
+        XOR DX, DX; clear DX for storing the result
+        CLC
+        
+        AND BL, BL
+        JZ MEND;multiplication ends
+        AND CL, CL
+        JZ MEND
+        
+CHECK:  MOV AL, DL ;move because DAA only works for AL
+        ADD AL, BL
+        DAA
+        MOV DL, AL
+        JNC NEXT ;not carry jump to NEXT
+        INC DH
+        MOV AL, DH
+        CLC; BUG here: must CLC 'cause INC not change CF
+        DAA
+        MOV DH, AL        
+        
+NEXT:   DEC CL ;NEXT decrement CL
+        MOV AL, CL
+        CLC; BUG here: must CLC 'cause DEC not change CF
+        DAS
+        MOV CL, AL
+        JNZ CHECK
+        
+MEND:   MOV WORD PTR [PRD], DX
+        
+        MOV AH, 4CH;the old 2 lines-AH!BUG here
+        INT 21H
+CODE    ENDS
+END     START

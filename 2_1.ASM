@@ -1,58 +1,45 @@
-NAME TEST1_1 ;16位数字加减
+NAME    EX2_1;add and subtract of two 16-bit binary numbers
+;Copyleft(c), Siarnold, 2017
 
-DATA SEGMENT
-    NUM1 DB 0H,0H ;数字1
-    NUM2 DB 0H,0H ;数字2
-    NUM3 DB 0H,0H ;和
-    NUM4 DB 0H,0H ;差
-DATA ENDS
+DATA    SEGMENT
+        A1 DB 3H, 5H; adder one = 0503H
+        A2 DB 4H, 2H; adder two = 0204H
+        SUM DB 2 DUP(?)
+        DIF DB 2 DUP(?)
+DATA    ENDS
+STACK   SEGMENT PARA STACK
+        DB 100 DUP(?)
+STACK   ENDS
 
-STACK SEGMENT PARA STACK
-    DB 10H DUP(?)
-STACK ENDS
-
-CODE SEGMENT
-    ASSUME DS:DATA, ES:DATA, SS:STACK, CS:CODE
-START:
-    
-    MOV AX,DATA
-    MOV DS,AX
-    MOV ES,AX
-    
-    ;ADD:
-    LEA BX,NUM1
-    LEA DI,NUM2
-    LEA SI,NUM3
-    CLC
-    MOV CX,2
-LOOP1:
-    MOV AL,[BX]
-    MOV DL,[DI]
-    ADC AL,DL ;加法
-    MOV [SI],AL
-    INC BX
-    INC DI
-    INC SI
-    LOOP LOOP1
-
-    ;SUB
-    LEA BX,NUM1
-    LEA DI,NUM2
-    LEA SI,NUM4
-    CLC
-    MOV CX,2
-LOOP2:
-    MOV AL,[BX]
-    MOV DL,[DI]
-    SBB AL,DL ;减法
-    MOV [SI],AL
-    INC BX
-    INC DI
-    INC SI
-    LOOP LOOP2
-    
-    INT 3 ;结束
-    
-CODE ENDS
-
-END START
+CODE    SEGMENT
+        ASSUME DS:DATA, ES:DATA, SS:STACK, CS:CODE
+START:  MOV AX, DATA; the old 3 lines
+        MOV DS, AX
+        MOV ES, AX
+        
+        MOV CX, 2;sum
+        MOV SI, 0
+        CLC        
+LOOP1:  MOV AL, A1[SI]
+        MOV SUM[SI], AL
+        MOV AL, A2[SI]
+        ADC SUM[SI], AL
+        INC SI
+        DEC CX
+        JNZ LOOP1
+        
+        MOV CX, 2;substract
+        MOV SI, 0
+        CLC        
+LOOP2:  MOV AL, A1[SI]
+        MOV DIF[SI], AL
+        MOV AL, A2[SI]
+        SBB dif[SI], AL
+        INC SI
+        DEC CX
+        JNZ LOOP2
+        
+        MOV AH, 4CH
+        INT 21H
+CODE    ENDS
+END     START

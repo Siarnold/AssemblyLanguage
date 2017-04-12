@@ -1,61 +1,50 @@
-NAME TEST2_2 ;ASCII乘法
+NAME EX2_4
+;Copyleft(c), Siarnold, 2017
 
-DATA SEGMENT 
-    NUM1 DB '9876'
-    NUM2 DB '9' , 3 DUP(0)
-    NUM3 DB 8 DUP(0)
-DATA ENDS
+DATA    SEGMENT
+        M1 DB '4572'
+        M2 DB '3'
+        PRD DB 4 DUP(0)
+DATA    ENDS
+STACK   SEGMENT PARA STACK
+        DB 100 DUP(?)
+STACK   ENDS
+CODE    SEGMENT
+        ASSUME DS:DATA, ES:DATA, SS:STACK, CS:CODE
+START:  MOV AX, DATA; the old 3 lines
+        MOV DS, AX
+        MOV ES, AX
+        
+        MOV BL, [M2];change ASCII to number
+        SUB BL, 30H
+        
+        LEA SI, M1
+        LEA DI, PRD
+        MOV CX, 4
+        
+LOOP1:  MOV AL, [SI]
+        SUB AL, 30H
+        MUL BL
+        AAM;ascii adjustment   
+        INC SI
+     
+        ADD AL, [DI]; DI store the carry
+        AAA
+        MOV [DI], AL
+        
+        INC DI
+        MOV [DI], AH; need not clear AH
+        ;'cause MUL gets a 16-bit result
+        LOOP LOOP1
+        
+        LEA DI, PRD
+        MOV CX, 4
 
-CODE SEGMENT
-    ASSUME DS:DATA, ES:DATA, CS:CODE
-START:
-    MOV AX,DATA
-    MOV DS,AX
-    MOV ES,AX
-    
-    MOV BL,BYTE PTR NUM2
-    SUB BL,30H
-    
-    LEA SI,NUM1
-    LEA DI,NUM3
-    MOV CX,4
-    
-LOOP1:
-    MOV AL,[SI]
-    SUB AL,30H ;ASCII数字修正
-    MUL BL
-    AAM        ;乘法调整
-    
-    ADD AL,[DI]
-    AAA
-    MOV [DI],AL ;加上上一位的进位
-    
-    ;ADC AH,0
-    INC DI
-    MOV [DI],AH ;存储这一位的进位
-    
-    INC SI
-    
-    LOOP LOOP1
-   
-   
-    LEA DI,NUM3
-    MOV CX,4
-LOOP2:
-    MOV AL,[DI]
-    ADD AL,30H
-    MOV [DI],AL
-    INC DI
-    LOOP LOOP2
-    
-    MOV AL,[DI]
-    OR AL,AL
-    JZ FINISH
-    ADD AL,30H
-    MOV [DI],AL
-    
-FINISH:    
-   
-    INT 3
-CODE ENDS
-END START
+LOOP2:  ADD BYTE PTR [DI], 30H; DI ascii adjust
+        INC DI
+        LOOP LOOP2
+        
+        MOV AH, 4CH;the old 2 lines
+        INT 21H
+CODE    ENDS
+END     START
