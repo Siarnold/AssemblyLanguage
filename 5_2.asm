@@ -48,7 +48,7 @@ WAIT_FOR:
     IN  AL, DX
     TEST AL, 00011110B ;if error
     JNZ ERR
-    TEST AL, 00000001B ;if ready ro receive
+    TEST AL, 00000001B ;if ready to receive
     JNZ RECEIVE
     TEST AL, 00100000B ;if not ready to send
     JZ  WAIT_FOR

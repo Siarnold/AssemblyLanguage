@@ -83,8 +83,8 @@ RECEIVE:
 
 ; Error
 ERR: 
-    MOV　DX, 3F8H
-    IN AL, DX ; read the error char to continue
+    MOV DX, 3F8H
+    IN  AL, DX ; read the error char to continue
     LEA DX, MSG2 ; show message
     MOV AH, 9
     INT 21H
