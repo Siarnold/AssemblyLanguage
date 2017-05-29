@@ -61,8 +61,13 @@ WAIT_FOR:
     MOV  AH, 1        ; get char and echo
     INT  21H
     
-    ; MOV  DX,3F8H 
-    ; OUT  DX,AL ; strange, check with datiao
+    CMP  AL, 20H      ; if AL != ' ', continue
+    JNZ  CONTINUE
+    MOV  DX, 3F8H     ; send ' '
+    OUT  DX, AL
+    JMP  FINISH
+
+CONTINUE:
     CMP  AL, 'S'      ;if not 'S', CHECK_CHAR
     JZ   SENDING
 
@@ -121,7 +126,7 @@ ERR:
     JMP  WAIT_FOR
     
 FINISH:
-    MOV AH,4CH   ; end
+    MOV AH, 4CH   ; end
     INT 21H
     
 CODE    ENDS
