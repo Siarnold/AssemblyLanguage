@@ -1,0 +1,96 @@
+NAME EX7_1_2
+
+DATA SEGMENT
+    ADDRESS EQU 0280H
+    DAT DB ?
+    DAT2 DB ?
+DATA ENDS
+STACK SEGMENT PARA STACK
+      DB 100 DUP(?)
+STACK ENDS
+CODE SEGMENT
+  ASSUME CS:CODE,DS:DATA,ES:DATA,SS:STACK
+
+; delay
+DELAY  PROC    FAR
+       PUSH    CX
+       PUSH    AX
+       MOV    AX,02FFH
+X1:    MOV    CX,0FFFH
+X2:    DEC    CX
+       JNE    X2
+       DEC    AX
+       JNE    X1
+       POP    AX
+       POP    CX
+       RET
+DELAY  ENDP  
+
+; main 
+START: MOV AX,DATA
+       MOV DS,AX
+       MOV ES,AX
+       
+; initialize 8255
+    MOV AL,10010000B; method 0£¬A input£¬C output
+    MOV DX,ADDRESS+3   
+    OUT DX,AL
+    
+    MOV DAT,01H
+    MOV DAT2,00H
+LOOPP:  
+    MOV AH,1; keyboard read in
+    INT 16H
+    JNZ READ
+      
+    MOV DX,ADDRESS
+    IN AL,DX
+    MOV AH,AL
+    AND AH,11000000B
+    CMP AH,10000000B
+    JE LEFT
+    CMP AH,01000000B
+    JE RIGHT
+    CMP AH,11000000B
+    JE SHAN
+    MOV AL,0
+    MOV DX,ADDRESS+2
+    OUT DX,AL
+    JMP LOOPP
+    
+LEFT:
+    MOV AL,DAT
+    MOV DX,ADDRESS+2
+    OUT DX,AL
+    CALL DELAY
+    ROL DAT,1
+    JMP LOOPP
+RIGHT:
+    MOV AL,DAT
+    MOV DX,ADDRESS+2
+    OUT DX,AL
+    CALL DELAY
+    ROR DAT,1
+    JMP LOOPP
+SHAN:
+    MOV AL,DAT2
+    MOV DX,ADDRESS+2
+    OUT DX,AL
+    CALL DELAY
+    NOT DAT2
+    JMP LOOPP
+
+   
+READ:
+    MOV AH,0;keyboard read in
+    INT 16H
+    CMP AL,0EH
+    JNE ENDD
+    JMP LOOPP
+ENDD:  
+    MOV AH,4CH
+    INT 21H
+CODE ENDS
+END START
+
+
